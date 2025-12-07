@@ -6,14 +6,17 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Optional;
 
 public class ClientApp extends Application {
 
@@ -23,11 +26,91 @@ public class ClientApp extends Application {
     private TextArea consoleArea;
     private TextField inputField;
 
-    private final String HOST = "localhost";
-    private final int PORT = 8189;
+    private String HOST;
+    private int PORT;
+
+    private String[] requestHostAndPort () {
+        Dialog<String[]> dialog = new Dialog<>();
+
+        dialog.setTitle("Сonnection to the server");
+        dialog.setHeaderText("Enter server IP-address (or host) and port");
+
+        ButtonType connectionButton = new ButtonType("Connect", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancellationButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(connectionButton, cancellationButton);
+
+        TextField hostField = new TextField("localhost");
+        hostField.setFont(Font.font("consolas",14));
+
+        TextField portField = new TextField("8189");
+        portField.setFont(Font.font("consolas",14));
+
+        GridPane grid = new GridPane();
+        grid.setHgap(20);
+        grid.setVgap(20);
+        grid.setPadding(new Insets(20, 20, 20, 20));
+
+        Label hostLabel = new Label("IP_address/hostname");
+        hostLabel.setFont(Font.font("consolas",14));
+
+        Label portLabel = new Label("Port");
+        portLabel.setFont(Font.font("consolas",14));
+
+        grid.add(hostLabel, 0, 0);
+        grid.add(hostField, 1, 0);
+        grid.add(portLabel, 0, 1);
+        grid.add(portField, 1, 1);
+
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(button -> {
+            if (button == connectionButton) {
+                return new String[]{hostField.getText().trim(), portField.getText().trim()};
+            }
+            return null;
+        });
+
+        Optional<String[]> result = dialog.showAndWait();
+        return result.orElse(null);
+    }
+
+    private boolean isValidHost(String host) {
+        if (host.isEmpty())
+            return false;
+        try {
+            InetAddress.getByName(host); // accepts IPv4, IPv6 and DNS names
+            return true;
+        } catch (UnknownHostException e) {
+            return false;
+        }
+    }
 
     @Override
     public void start(Stage stage) {
+        String[] requestResult=requestHostAndPort();
+        if (requestResult==null) {
+            Platform.exit();
+            return;
+        }
+
+        if (isValidHost(requestResult[0])) {
+            HOST=requestResult[0];
+        }
+        else {
+            throw new IllegalArgumentException("Invalid host format: must be IP address or hostname.");
+        }
+
+        int port;
+        try {
+            port = Integer.parseInt(requestResult[1]);
+            if (port < 1 || port > 65535) {
+                throw new IllegalArgumentException("Invalid port format: must be a number between 1 and 65535.");
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid port format: must be a number between 1 and 65535.", e);
+        }
+        PORT = port;
+
         consoleArea = new TextArea();
         consoleArea.setEditable(false);
         consoleArea.setStyle("-fx-control-inner-background: black; -fx-text-fill: white;");
@@ -63,7 +146,7 @@ public class ClientApp extends Application {
                     CommandMessage msg = (CommandMessage) in.readObject();
                     Platform.runLater(() -> {
                         if (msg.getType() == MessageType.ERROR) {
-                            consoleArea.appendText("ERR: " + msg.getContent());
+                            consoleArea.appendText("ERROR: " + msg.getContent());
                         } else {
                             consoleArea.appendText(msg.getContent());
                         }

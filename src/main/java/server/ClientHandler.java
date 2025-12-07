@@ -8,9 +8,7 @@ import java.net.Socket;
 import java.nio.charset.Charset;
 
 public class ClientHandler implements Runnable {
-    private Socket socket;
-    private ObjectOutputStream out;
-    private ObjectInputStream in;
+    private final Socket socket;
     private Process process;
     private BufferedWriter processWriter;
 
@@ -21,14 +19,14 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         try {
-            out = new ObjectOutputStream(socket.getOutputStream());
-            in = new ObjectInputStream(socket.getInputStream());
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
 
-            ProcessBuilder pb = new ProcessBuilder("cmd.exe");
+            ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/k", "chcp 65001");
 
             process = pb.start();
 
-            Charset consoleCharset = Charset.defaultCharset();
+            Charset consoleCharset = Charset.forName("UTF-8");
 
             processWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream(), consoleCharset));
 
