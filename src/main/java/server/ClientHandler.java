@@ -26,7 +26,7 @@ public class ClientHandler implements Runnable {
 
             process = pb.start();
 
-            Charset consoleCharset = Charset.forName("UTF-8");
+            Charset consoleCharset = Charset.forName("CP866");
 
             processWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream(), consoleCharset));
 
