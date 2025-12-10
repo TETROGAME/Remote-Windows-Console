@@ -97,17 +97,35 @@ public class ClientApp extends Application {
             HOST=requestResult[0];
         }
         else {
-            throw new IllegalArgumentException("Invalid host format: must be IP address or hostname.");
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Input Error");
+            alert.setHeaderText("Invalid Input");
+            alert.setContentText("Invalid host format: must be IP address or DNS-name.");
+            alert.showAndWait();
+            Platform.exit();
+            return;
         }
 
         int port;
         try {
             port = Integer.parseInt(requestResult[1]);
             if (port < 1 || port > 65535) {
-                throw new IllegalArgumentException("Invalid port format: must be a number between 1 and 65535.");
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Input Error");
+                alert.setHeaderText("Invalid Input");
+                alert.setContentText("Invalid port format: must be a number in range 1-65535.");
+                alert.showAndWait();
+                Platform.exit();
+                return;
             }
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid port format: must be a number between 1 and 65535.", e);
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Input Error");
+            alert.setHeaderText("Invalid Input");
+            alert.setContentText("Invalid port format: must be a number in range 1-65535.");
+            alert.showAndWait();
+            Platform.exit();
+            return;
         }
         PORT = port;
 
