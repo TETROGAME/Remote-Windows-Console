@@ -32,8 +32,8 @@ public class ClientApp extends Application {
     private String[] requestHostAndPort () {
         Dialog<String[]> dialog = new Dialog<>();
 
-        dialog.setTitle("Сonnection to the server");
-        dialog.setHeaderText("Enter server IP-address (or host) and port");
+        dialog.setTitle("Connection to the server");
+        dialog.setHeaderText("Enter server IP-address (or hostname) and port");
 
         ButtonType connectionButton = new ButtonType("Connect", ButtonBar.ButtonData.OK_DONE);
         ButtonType cancellationButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);

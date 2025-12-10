@@ -10,7 +10,6 @@ import java.nio.charset.Charset;
 public class ClientHandler implements Runnable {
     private final Socket socket;
     private Process process;
-    private BufferedWriter processWriter;
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
@@ -28,7 +27,7 @@ public class ClientHandler implements Runnable {
 
             Charset consoleCharset = Charset.forName("CP866");
 
-            processWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream(), consoleCharset));
+            BufferedWriter processWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream(), consoleCharset));
 
             new Thread(new StreamGobbler(process.getInputStream(), MessageType.OUTPUT, out, consoleCharset)).start();
             new Thread(new StreamGobbler(process.getErrorStream(), MessageType.ERROR, out, consoleCharset)).start();
